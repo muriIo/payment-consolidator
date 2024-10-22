@@ -6,6 +6,8 @@ A project that use RabbitMQ to enqueue payment records read from a CSV file.
 
 We have a CSV file with some records mocking a payment list. Payments have types, which the _PRODUCER_ project reads and send them to the specific _RABBITMQ_ queue (pix queue, bank slip queue or card queue). Then, we have three different consumers, each consumer reads from its specific queue.
 
+The exchange is direct.
+
 ## Instalation
 
 This project uses _Docker_ to build a _RabbitMQ Management_ image and _Golang_, so:
