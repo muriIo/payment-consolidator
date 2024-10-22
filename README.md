@@ -67,11 +67,12 @@ I went a little further adding the support of reading arguments from the command
 
 In the future, I want to introduce other features:
 
+- Monitoring and logging
+    - Enhance the perfomance
 - Fault tolerance and retry mechanism
 - Load balancing for consumers
 - Parallel consumers per payment type
 - Manual message acknowledgement and durability
-- Monitoring and logging
 - Batch processing
 - Timeout and circuit breaker patterns
 - Security enhancements (since we are dealing with financial data)
