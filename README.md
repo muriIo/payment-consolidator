@@ -39,17 +39,23 @@ We need to run the _consumers_ project in one terminal (because it is going to b
 Go to the /consumers folder and run any of the folllowing commands:
 
 - For the pix queue:
+
   ```bash
   go run main.go pix
   ```
+
 - For the bank slip queue:
+
   ```bash
   go run main.go bank_slip
   ```
+
 - For the card queue:
+
   ```bash
   go run main.go card
   ```
+
 #### Second terminal
 
 Go to the /producer folder and run the command:
@@ -57,9 +63,10 @@ Go to the /producer folder and run the command:
 ```bash
 go run producer.go MOCK_DATA.csv
 ```
+
 ### Step 3: See the result
 
-You will see, in the format of *JSON*, all the records that the consumer project fetched from the specific queue that you provided.
+You will see, in the format of _JSON_, all the records that the consumer project fetched from the specific queue that you provided.
 
 ## Nice things to notice
 
@@ -70,7 +77,7 @@ I went a little further adding the support of reading arguments from the command
 In the future, I want to introduce other features:
 
 - Monitoring and logging
-    - Enhance the perfomance
+  - Enhance the perfomance
 - Fault tolerance and retry mechanism
 - Load balancing for consumers
 - Parallel consumers per payment type
