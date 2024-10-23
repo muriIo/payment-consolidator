@@ -1,0 +1,8 @@
+{
+  "id": 945,
+  "customer_id": "3b755383-94ce-49f7-a9ee-4e1c96494677",
+  "customer_name": "Vanny Ciubutaro",
+  "description": "In congue. Etiam justo.",
+  "amount": "664.43",
+  "type_of_payment": "pix"
+}

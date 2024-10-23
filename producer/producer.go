@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -72,24 +73,28 @@ func normalizeRecords(records [][]string) Payments {
 	return payments
 }
 
-func (payments Payments) toJson() []byte {
-	message, err := json.MarshalIndent(payments, "", "  ")
+func (payment Payment) toJson() []byte {
+	message, err := json.MarshalIndent(payment, "", "  ")
 
 	failOnError(err, "Error converting struct to JSON")
 
 	return message
 }
 
-func (payments Payments) filterByTypeOfPayment(typeOfPayment string) Payments {
-	var filtered Payments
+func publishPayment(ctx context.Context, ch *amqp.Channel, exchange_name string, payment Payment, wg *sync.WaitGroup) {
+	defer wg.Done()
 
-	for _, payment := range payments {
-		if payment.Type_of_payment == typeOfPayment {
-			filtered = append(filtered, payment)
-		}
-	}
+	err := ch.PublishWithContext(ctx,
+		exchange_name,
+		payment.Type_of_payment,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        payment.toJson(),
+		})
 
-	return filtered
+	failOnError(err, "Error sending payment to the exchange")
 }
 
 func main() {
@@ -99,9 +104,6 @@ func main() {
 
 	records := readCSV(os.Args[1])
 	payments := normalizeRecords(records)
-	pix_payment := payments.filterByTypeOfPayment("pix")
-	bank_slip_payment := payments.filterByTypeOfPayment("bank_slip")
-	card_payment := payments.filterByTypeOfPayment("card")
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -130,39 +132,12 @@ func main() {
 
 	defer cancel()
 
-	err = ch.PublishWithContext(ctx,
-		exchange_name,
-		"pix",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        pix_payment.toJson(),
-		})
+	var wg sync.WaitGroup
 
-	failOnError(err, "Failed to publish the pix records")
+	for _, payment := range payments {
+		wg.Add(1)
+		go publishPayment(ctx, ch, exchange_name, payment, &wg)
+	}
 
-	err = ch.PublishWithContext(ctx,
-		exchange_name,
-		"bank_slip",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        bank_slip_payment.toJson(),
-		})
-
-	failOnError(err, "Failed to publish the bank slip records")
-
-	err = ch.PublishWithContext(ctx,
-		exchange_name,
-		"card",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        card_payment.toJson(),
-		})
-
-	failOnError(err, "Failed to publish the card records")
+	wg.Wait()
 }

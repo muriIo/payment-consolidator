@@ -3,6 +3,7 @@ package card_consumer
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -13,7 +14,9 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func Listen() {
+func Listen(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	fmt.Printf("Initialzing card consumer...\n")
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")

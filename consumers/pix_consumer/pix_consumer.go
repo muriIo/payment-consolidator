@@ -3,6 +3,8 @@ package pix_consumer
 import (
 	"fmt"
 	"log"
+	"os"
+	"sync"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -13,7 +15,9 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func Listen() {
+func Listen(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	fmt.Printf("Initialzing pix consumer...\n")
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
@@ -81,7 +85,11 @@ func Listen() {
 
 	go func() {
 		for d := range pix_payments {
-			log.Printf(" [x] %s", d.Body)
+			err := os.WriteFile("./test_data.txt", d.Body, 0666)
+
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}()
 
